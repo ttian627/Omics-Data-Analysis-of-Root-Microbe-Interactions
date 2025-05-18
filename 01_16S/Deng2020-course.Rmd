@@ -1,0 +1,150 @@
+---
+title: "Statistical analyses and plotting for sorghum rhizosphere GWAS"
+author: "Siwen Deng Ph.D. and Daniel F. Caddell Ph.D."
+date: "12/08/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+all R code for the manuscript entitled 'Genome wide association study reveals plant loci controlling heritability of the rhizosphere microbiome'
+
+Assume the input files below are in the current working directory
+
+#load packages
+```{r results="hide", warning=FALSE, message=FALSE}
+library("phyloseq"); packageVersion("phyloseq") #‘1.30.0’
+library("ggplot2"); packageVersion("ggplot2") #‘3.2.1’
+library("scales"); packageVersion("scales") #‘1.1.0’
+library("grid"); packageVersion("grid") #‘3.6.1’
+#library("DESeq"); packageVersion("DESeq") #‘1.38.0’
+library("ape"); packageVersion("ape") #‘5.3’
+#library("reshape2"); packageVersion("reshape2") #‘1.4.3’
+library("vegan"); packageVersion("vegan") #‘2.5.6’
+library("data.table"); packageVersion("data.table") #‘1.12.8’
+library("ggrepel"); packageVersion("ggrepel") #‘0.8.1’
+library("dplyr"); packageVersion("dplyr") #‘0.8.3’
+library("data.table"); packageVersion("data.table") #‘1.12.8’
+library("RColorBrewer"); packageVersion("RColorBrewer") #‘1.1.2’
+library("colorspace"); packageVersion("colorspace") #‘1.4.1’
+library("patchwork"); packageVersion("patchwork") #‘1.0.0’
+#library("mctoolsr"); packageVersion("mctoolsr")
+theme_set(theme_bw())
+#setwd("/set/working/directory/location/")
+#setwd("/users/dcaddell/Desktop/GWAS_submission/Github/R_data/")
+```
+
+#Figure 
+
+```{r}
+#import data from current working directory 
+rar <- readRDS("fig1_24line.rds")
+# check the data format for rar
+rar
+```
+
+#Figure 1-Alpha diversity
+```{r}
+Diversity_table <- estimate_richness(rar,  measures=c("Shannon", "Observed"))
+Diversity_table <- merge(Diversity_table, sample_data(rar), by="row.names")
+Diversity_table$Sampletype <- factor(Diversity_table$Sampletype, levels = c( "Leaf", "Root", "Rhizo"))
+p1b <- ggplot(data=Diversity_table, aes(y=Shannon,x=Sampletype,fill=Sampletype)) + 
+              geom_boxplot() +
+              scale_fill_manual(values=c("#9ACAA1","#E1D337", "#CE8764")) +
+              theme(axis.text.x=element_text(hjust=1,vjust=0.5,size=10,color="black",angle=90,face="bold"), 
+                    axis.text.y=element_text(size=11,color="black",face="bold"), 
+                    axis.title=element_text(size=11,face="bold"),text=element_text(size=11,face="bold"),
+                    legend.position="right")
+p1b
+# ggsave("figure_1b.pdf", plot = p1b, width=6, height=5, useDingbats=FALSE)
+# ggsave("figure_1b.png", plot = p1b, width=6, height=5, dpi=600)
+```
+
+#Figure 2-rarefraction
+```{r}
+rar1 <- readRDS("fig3_200line.rds")
+otu_mat <- as(otu_table(rar1), "matrix")
+if (taxa_are_rows(rar)) {
+  otu_mat <- t(otu_mat)
+}
+
+rarecurve(otu_mat,
+           step = 500,
+           sample = depth,
+           col = "steelblue",
+           cex = 0.5,
+           label = FALSE,
+           ylab = "Observed OTUs",
+           xlab = "Sequencing Depth",
+           main = "Rarefaction Curves per Sample")
+ 
+
+
+
+
+```
+
+
+#Figure 3-Beta diversity
+```{r}
+p1c <- plot_ordination(rar, ordinate(rar, "MDS",distance="bray"),axes=1:2, color = "Sampletype") + 
+                      scale_color_manual(values=c("#9ACAA1","#CE8764","#E1D337")) +
+                      geom_point(colour="black",size=3.5) +
+                      geom_point(size = 2.5) +
+                      xlim(-0.4,0.7) +
+                      scale_x_continuous(breaks=c(-0.3,0,0.3,0.6))+
+                      ylim(-0.33,0.25)+
+                      theme(axis.text.x=element_text(size=11,color="black",angle=90),
+                            axis.text.y=element_text(size=11,color="black"), 
+                            axis.title=element_text(size=11,face="bold"),
+                            text=element_text(size=11,face="bold"),
+                            legend.position="right")
+p1c
+# ggsave("figure_1c.pdf", plot = p1c, width=6, height=5, useDingbats=FALSE)
+# ggsave("figure_1c.png", plot = p1c, width=6, height=5, dpi=600)
+```
+
+#Figure 4-taxa distribution
+
+
+
+```{r}
+rar_order <- tax_glom(rar, taxrank = "Order")
+# compute Order abundance for each sample
+rar_order_rel <- transform_sample_counts(rar_order, function(x) x / sum(x))
+# change phyloseq to dataframe
+df_order <- psmelt(rar_order_rel)
+# set NA as "Unclassified"
+
+# top10 Orders and "Other"
+top_orders <- df_order %>%
+  group_by(Order) %>%
+  summarise(Abundance = sum(Abundance)) %>%
+  top_n(9, Abundance) %>%
+  pull(Order)
+
+df_order$Order_grouped <- ifelse(df_order$Order %in% top_orders, df_order$Order, "Other")
+
+# plot
+ggplot(df_order, aes(x = Sample, y = Abundance, fill = Order_grouped)) +
+  geom_bar(stat = "identity") +
+  theme_bw() +
+  labs(title = "Order-level Microbial Composition per Sample",
+       x = "Sample",
+       y = "Relative Abundance") +
+  theme(axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(),
+        legend.position = "right") +
+        scale_y_continuous(limits = c(0, 1), expand = c(0, 0))+
+  scale_fill_manual(values = c(RColorBrewer::brewer.pal(9, "Set3"), "grey")) 
+```
+
+
+
+
+
+
