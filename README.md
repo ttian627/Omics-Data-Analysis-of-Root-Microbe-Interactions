@@ -7,7 +7,7 @@
  01_16S [Deng et al., 2020]
 
 
-https://github.com/colemanderr-lab/Deng-2020/blob/master/    
+https://github.com/colemanderr-lab/Deng-2020/blob/master/
 
  03_Co-regulation Networks [Yu et al., 2020]  
 
