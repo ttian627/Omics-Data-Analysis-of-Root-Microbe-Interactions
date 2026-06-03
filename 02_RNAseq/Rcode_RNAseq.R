@@ -1,7 +1,10 @@
 #run in Rstudio
-PCA analysis(R script)
-
+#PCA analysis(R script)
+#setwd("change to your working directory")
+setwd("/Users/ttian627163.com/Documents/TUM/03_Course/Omics-Data-Analysis-of-Root-Microbe-Interactions-main/02_RNAseq")
 library(ggplot2)
+library(ggrepel)
+library(plotly)
 #read expression matrix
 expr_matrix_B73 <- read.table("B73-exp-matrix-FPKM.txt", row.names=1,header = T,check.names = FALSE)
 #expr_matrix_B73 <- expr_matrix[,91:99]
@@ -34,7 +37,7 @@ ggplot(pca_data, aes(x=PC1, y=PC2, color=Group)) +
 plot_ly(pca_data, x = ~PC1, y = ~PC2, z = ~PC3, color = ~Group,
         colors = c("Z1" = "#f5c242", "Z2" = "#4fad5b", "Z3" = "#4fadea"),
         type = "scatter3d", mode = "markers+text", text = ~Sample,textposition = "top center", marker = list(size = 5)) %>%
-  layout(title = "3D PCA of Transcriptome Data",
+  plotly::layout(title = "3D PCA of Transcriptome Data",
          scene = list(xaxis = list(title = paste0("PC1 (", round(summary(pca_result)$importance[2,1]*100,1), "%)")),
                       yaxis = list(title = paste0("PC2 (", round(summary(pca_result)$importance[2,2]*100,1), "%)")),
                       zaxis = list(title = paste0("PC3 (", round(summary(pca_result)$importance[2,3]*100,1), "%)"))))
@@ -57,7 +60,7 @@ library(DESeq2)
 #all( colnames(expr_matrix)[-181] == group_info$Sample)   # 应为 TRUE
 #colData$Group <- factor(colData$Group)
 
-expr_matrix=read.table("/home/go82tip/course/02_WGCNA/Yu2021NaturePlants/gene_counts_table_WGCNA.txt",header=T,row.names=1,sep="\t")
+expr_matrix=read.table("../03_WGCNA/gene_counts_table_WGCNA.txt",header=T,row.names=1,sep="\t")
 sample_metadata = read.csv(file = "sample_group_info.csv")
 
 sub_metadata <- sample_metadata[sample_metadata$Genotype %in% c("B73"), ]
@@ -89,3 +92,4 @@ ggplot(df, aes(x = log2FoldChange, y = -log10(padj), color = significance)) +
        y = "-log10 Adjusted p-value") +
   theme_minimal() +
   theme(legend.title = element_blank())
+
