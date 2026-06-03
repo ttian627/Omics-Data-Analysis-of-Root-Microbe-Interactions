@@ -13,10 +13,13 @@ conda install fastqc
 
 # download RNA-seq raw data (search from NCBI)
 wget -c https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR11839278/SRR11839278
+fastq-dump --split-3 ./SRR11839278
 
 # build genome index, download maize genome (Zm-B73-REFERENCE-NAM-5.0.fa) from MaizeGDB
 wget -c https://download.maizegdb.org/Genomes/B73/Zm-B73-REFERENCE-NAM-5.0/Zm-B73-REFERENCE-NAM-5.0.fa.gz
 gunzip Zm-B73-REFERENCE-NAM-5.0.fa.gz
+
+# Extract chr10 sequence for testing
 samtools faidx Zm-B73-REFERENCE-NAM-5.0.fa chr10 > chr10.fa
 #hisat2-build Zm-B73-REFERENCE-NAM-5.0.fa B73v5.hisat
 hisat2-build chr10.fa B73v5.chr10.hisat
