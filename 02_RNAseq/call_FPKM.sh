@@ -3,7 +3,7 @@ log in and change to the compute node
 srun -p cm4_inter -t 03:00:00 -c 8 --pty bash
 
 #install softwares
-install conda
+conda create -n RNAseq
 conda install -c bioconda hisat2
 conda install bioconda::stringtie
 conda install -c bioconda sra-tools
