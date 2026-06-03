@@ -31,7 +31,8 @@ fastqc SRR11839278_1.fastq
 hisat2 --summary-file SRR11839278.summary -x B73v5.chr10.hisat -1 SRR11839278_1.fastq -2 SRR11839278_2.fastq | samtools view -bhS -q 30 - |  samtools sort -@ 10 -o SRR11839278.uniq.bam
 
 # call FPKM
-stringtie SRR11839278.uniq.bam -G ref/Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gtf  -A stringtie_uniq/B73-Z2-2/SRR11839278.abun -o  stringtie_uniq/B73-Z2-2/SRR11839278.gtf -B -e
+unzip ref/Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gtf.zip
+stringtie SRR11839278.uniq.bam -G Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gtf  -A stringtie_uniq/B73-Z2-2/SRR11839278.abun -o  stringtie_uniq/B73-Z2-2/SRR11839278.gtf -B -e
 
 # merge FPKM of different samples (I have merged the 9 samples and you can download form github with the following link)
 https://github.com/ttian627/Omics-Data-Analysis-of-Root-Microbe-Interactions/blob/main/02_RNAseq/B73-exp-matrix-FPKM.txt
