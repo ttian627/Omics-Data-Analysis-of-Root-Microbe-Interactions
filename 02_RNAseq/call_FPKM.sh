@@ -12,8 +12,7 @@ conda install fastqc
 
 
 # download RNA-seq raw data (search from NCBI)
-wget -c https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR11839278/SRR11839278
-fastq-dump --split-3 ./SRR11839278
+for i in `cat SRR-list-B73.txt`;do prefetch $i --max-size u;done
 
 # build genome index, download maize genome (Zm-B73-REFERENCE-NAM-5.0.fa) from MaizeGDB
 wget -c https://download.maizegdb.org/Genomes/B73/Zm-B73-REFERENCE-NAM-5.0/Zm-B73-REFERENCE-NAM-5.0.fa.gz
